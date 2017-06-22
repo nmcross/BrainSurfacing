@@ -1,0 +1,51 @@
+#!/bin/bash
+# Convert surf files from freesurfer into object files
+
+FREESURFER_HOME=/Applications/Neuroradiology/freesurfer
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+SCRIPT_DIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Check Passed Arguments
+if [ $# -gt 1 ]
+then
+    echo "only give command single surf directory"
+    exit 1
+elif [ $# == 0 ]
+then
+    echo "surfFldr2obj"
+    echo "convert freesurfer surf folder pial surfaces to .obj files"
+    echo "Nathan M. Cross 2017"
+    echo 'ex: surfFldr2obj $FREESURFER_HOME/subjects/subj1/surf'
+    exit 1
+fi
+
+if [ ! -d "$1" ]
+then
+    echo "only accepts surf directory from freesurfer"
+    exit 1
+fi
+
+# Check Requisite installation of gawk
+if [ ! $(which gawk) ]
+then
+    echo "Gawk not installed, try:"
+    echo "   sudo port install gawk"
+    exit 1
+fi
+
+# convert pial surface
+echo "-> converting surf to .srf"
+$FREESURFER_HOME/bin/mris_convert "$1"/lh.pial "$1"/lh.pial.asc
+mv "$1"/lh.pial.asc "$1"/lh.pial.srf
+$FREESURFER_HOME/bin/mris_convert "$1"/rh.pial "$1"/rh.pial.asc
+mv "$1"/rh.pial.asc "$1"/rh.pial.srf
+
+# convert srf file to .obj format
+echo "-> converting .srf to Waveform .obj format"
+"$SCRIPT_DIR_PATH/srf2obj" "$1"/lh.pial.srf > "$1"/lh.pial.obj
+"$SCRIPT_DIR_PATH/srf2obj" "$1"/rh.pial.srf > "$1"/rh.pial.obj
+
+echo "-> conversion complete:"
+echo "   > surf/lh.pial.obj"
+echo "   > surf/rh.pial.obj"
+
