@@ -4,6 +4,10 @@
 FREESURFER_HOME=/Applications/Neuroradiology/freesurfer
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 SCRIPT_DIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SUBJECT_ROOT="$1/../"
+SUBJECT_MODEL_PATH="$SUBJECT_ROOT/model"
+
+
 
 # Check Passed Arguments
 if [ $# -gt 1 ]
@@ -33,19 +37,27 @@ then
     exit 1
 fi
 
+#make folder for obj and other 3D models
+if [ ! -d "$SUBJECT_MODEL_PATH" ]
+then
+    mkdir "$SUBJECT_MODEL_PATH" 
+fi
+
+
 # convert pial surface
 echo "-> converting surf to .srf"
-$FREESURFER_HOME/bin/mris_convert "$1"/lh.pial "$1"/lh.pial.asc
-mv "$1"/lh.pial.asc "$1"/lh.pial.srf
-$FREESURFER_HOME/bin/mris_convert "$1"/rh.pial "$1"/rh.pial.asc
-mv "$1"/rh.pial.asc "$1"/rh.pial.srf
+$FREESURFER_HOME/bin/mris_convert "$1"/lh.pial "$SUBJECT_MODEL_PATH"/lh.pial.asc
+mv "$SUBJECT_MODEL_PATH"/lh.pial.asc "$SUBJECT_MODEL_PATH"/lh.pial.srf
+$FREESURFER_HOME/bin/mris_convert "$1"/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc
+mv "$SUBJECT_MODEL_PATH"/rh.pial.asc "$SUBJECT_MODEL_PATH"/rh.pial.srf
 
 # convert srf file to .obj format
 echo "-> converting .srf to Waveform .obj format"
-"$SCRIPT_DIR_PATH/srf2obj" "$1"/lh.pial.srf > "$1"/lh.pial.obj
-"$SCRIPT_DIR_PATH/srf2obj" "$1"/rh.pial.srf > "$1"/rh.pial.obj
+"$SCRIPT_DIR_PATH/srf2obj" "$SUBJECT_MODEL_PATH"/lh.pial.srf > "$SUBJECT_MODEL_PATH"/lh.pial.obj
+"$SCRIPT_DIR_PATH/srf2obj" "$SUBJECT_MODEL_PATH"/rh.pial.srf > "$SUBJECT_MODEL_PATH"/rh.pial.obj
 
 echo "-> conversion complete:"
-echo "   > surf/lh.pial.obj"
-echo "   > surf/rh.pial.obj"
+echo "   > model/lh.pial.obj"
+echo "   > model/rh.pial.obj"
+echo "   > moedl/fused.pial.obj
 
