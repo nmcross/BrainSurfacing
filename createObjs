@@ -35,6 +35,14 @@ then
     echo "   sudo port install gawk"
     exit 1
 fi
+# Check Requisite installation of octave
+if [ ! $(which octave) ]
+then
+    echo "Octave not installed, try:"
+    echo "   sudo port install octave"
+    exit 1
+fi
+
 
 #make folder for obj and other 3D models
 if [ ! -d "$SUBJECT_MODEL_PATH" ]
@@ -46,9 +54,10 @@ else
 fi
 
 # convert files from dicom to nifti
+# /Applications/Neuroradiology/MRIcron/dcm2nii64 -a y -p y -g y -v y ~/Desktop/DICOM\ Data/normal02/ser003img00*
 
 # run full freesurfer recon-all on data
-
+# recon-all -i ../nmc_subjects/anon_01/20141124_121729SAGT1MPRAGEs006a1001.nii.gz -t2 ../nmc_subjects/anon_01/20141124_121729SAGT2FLAIRSPACESs006a1001.nii.gz -s anon01_recon01 -all
 
 # convert pial surface
 echo "-> converting surf to .srf"
