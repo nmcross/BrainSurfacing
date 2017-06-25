@@ -20,6 +20,10 @@
 
 % Do some OCTAVE stuff, but use TRY to ensure MATLAB compatibility
 try
+    % NMC addpath described above
+    addpath("/Applications/Neuroradiology/freesurfer/matlab")
+    addpath("~/Code_Repository/BrainSurfacing/areal/share")
+
     % Get the inputs
     varargin = argv();
     nargin = numel(varargin);
