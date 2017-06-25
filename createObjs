@@ -53,13 +53,19 @@ mv "$SUBJECT_MODEL_PATH"/lh.pial.asc "$SUBJECT_MODEL_PATH"/lh.pial.srf
 $FREESURFER_HOME/bin/mris_convert "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc
 mv "$SUBJECT_MODEL_PATH"/rh.pial.asc "$SUBJECT_MODEL_PATH"/rh.pial.srf
 
+# make fused brain from both hemispheres
+#echo "$SCRIPT_DIR_PATH/areal/bin/mergesrf ${SUBJECT_MODEL_PATH}/lh.pial.srf ${SUBJECT_MODEL_PATH}/rh.pial.srf ${SUBJECT_MODEL_PATH}/whole.pial.srf"
+"$SCRIPT_DIR_PATH/areal/bin/mergesrf" "${SUBJECT_MODEL_PATH}/lh.pial.srf" "${SUBJECT_MODEL_PATH}/rh.pial.srf" "${SUBJECT_MODEL_PATH}/whole.pial.srf"
+
 # convert srf file to .obj format
 echo "-> converting .srf to Waveform .obj format"
-"$SCRIPT_DIR_PATH/srf2obj" "${SUBJECT_MODEL_PATH}/lh.pial.srf" > "$SUBJECT_MODEL_PATH"/lh.pial.obj
-"$SCRIPT_DIR_PATH/srf2obj" "${SUBJECT_MODEL_PATH}/rh.pial.srf" > "$SUBJECT_MODEL_PATH"/rh.pial.obj
+#echo "$SCRIPT_DIR_PATH/areal/bin/srf2obj ${SUBJECT_MODEL_PATH}/lh.pial.srf > $SUBJECT_MODEL_PATH/lh.pial.obj"
+"$SCRIPT_DIR_PATH/areal/bin/srf2obj" "${SUBJECT_MODEL_PATH}/lh.pial.srf" > "$SUBJECT_MODEL_PATH"/lh.pial.obj
+"$SCRIPT_DIR_PATH/areal/bin/srf2obj" "${SUBJECT_MODEL_PATH}/rh.pial.srf" > "$SUBJECT_MODEL_PATH"/rh.pial.obj
+"$SCRIPT_DIR_PATH/areal/bin/srf2obj" "${SUBJECT_MODEL_PATH}/whole.pial.srf" > "$SUBJECT_MODEL_PATH"/whole.pial.obj
 
 echo "-> conversion complete:"
 echo "   > model/lh.pial.obj"
 echo "   > model/rh.pial.obj"
-echo "   > model/fused.pial.obj"
+echo "   > model/whole.pial.obj"
 
