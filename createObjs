@@ -45,6 +45,10 @@ else
     mkdir "$SUBJECT_MODEL_PATH" 
 fi
 
+# convert files from dicom to nifti
+
+# run full freesurfer recon-all on data
+
 
 # convert pial surface
 echo "-> converting surf to .srf"
@@ -52,6 +56,31 @@ $FREESURFER_HOME/bin/mris_convert "$1"/surf/lh.pial "$SUBJECT_MODEL_PATH"/lh.pia
 mv "$SUBJECT_MODEL_PATH"/lh.pial.asc "$SUBJECT_MODEL_PATH"/lh.pial.srf
 $FREESURFER_HOME/bin/mris_convert "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc
 mv "$SUBJECT_MODEL_PATH"/rh.pial.asc "$SUBJECT_MODEL_PATH"/rh.pial.srf
+
+# Deep Structures
+# https://brainder.org/2012/05/08/importing-freesurfer-subcortical-structures-into-blender/
+
+# create parcelated cortical surfaces
+# ref: https://brainder.org/2014/01/08/splitting-cortical-surface-into-independent-regions/
+# splitting the cortical surface into one mesh per parcellation allows each to be imported as an independent object, and so, it becomes straightforward to apply a different colour for each one. To split, the first step is to convert the FreeSurfer annotation file to a data-per-vertex file (*.dpv). This can be done with the command annot2dpv.
+"$SCRIPT_DIR_PATH/areal/bin/annot2dpv" "$1/label/lh.aparc.annot" "${SUBJECT_MODEL_PATH}/lh.aparc.annot.dpv"
+"$SCRIPT_DIR_PATH/areal/bin/annot2dpv" "$1/label/rh.aparc.annot" "${SUBJECT_MODEL_PATH}/rh.aparc.annot.dpv"
+# must convert lh.white from binary to ascii
+"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/lh.white "$SUBJECT_MODEL_PATH"/lh.white.asc  
+"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/rh.white "$SUBJECT_MODEL_PATH"/rh.white.asc  
+"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/lh.pial "$SUBJECT_MODEL_PATH"/lh.pial.asc  
+"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc  
+# Before running, be sure that ${FREESURFER_HOME}/matlab is in the Octave/matlab, path. With the data-per-vertex file ready, do the splitting of the surface with splitsrf.
+# This will create several files names as lh.white_roi*. Each corresponds to one piece of the cortex, in *.srf format. To convert to a format that can be read directly into computer graphics software.
+"$SCRIPT_DIR_PATH/areal/bin/splitsrf" "$SUBJECT_MODEL_PATH/lh.white.asc" "${SUBJECT_MODEL_PATH}/lh.aparc.annot.dpv" "${SUBJECT_MODEL_PATH}/lh.white_roi"
+"$SCRIPT_DIR_PATH/areal/bin/splitsrf" "$SUBJECT_MODEL_PATH/rh.white.asc" "${SUBJECT_MODEL_PATH}/rh.aparc.annot.dpv" "${SUBJECT_MODEL_PATH}/rh.white_roi"
+"$SCRIPT_DIR_PATH/areal/bin/splitsrf" "$SUBJECT_MODEL_PATH/lh.pial.asc" "${SUBJECT_MODEL_PATH}/lh.aparc.annot.dpv" "${SUBJECT_MODEL_PATH}/lh.pial_roi"
+"$SCRIPT_DIR_PATH/areal/bin/splitsrf" "$SUBJECT_MODEL_PATH/rh.pial.asc" "${SUBJECT_MODEL_PATH}/rh.aparc.annot.dpv" "${SUBJECT_MODEL_PATH}/rh.pial_roi"
+# http://ftp.nmr.mgh.harvard.edu/fswiki/CorticalParcellation
+#Destrieux atlas (?h.aparc.a2009s.annot)
+#Desikan-Killiany atlas (?h.aparc.annot)
+#Mindboggle (?h.aparc.DKTatlas40.annot)
+#Brodmann areas (?h.BA.annot and ?h.BA.thresh.annot)
 
 # make fused brain from both hemispheres
 #echo "$SCRIPT_DIR_PATH/areal/bin/mergesrf ${SUBJECT_MODEL_PATH}/lh.pial.srf ${SUBJECT_MODEL_PATH}/rh.pial.srf ${SUBJECT_MODEL_PATH}/whole.pial.srf"
@@ -63,9 +92,42 @@ echo "-> converting .srf to Waveform .obj format"
 "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "${SUBJECT_MODEL_PATH}/lh.pial.srf" > "$SUBJECT_MODEL_PATH"/lh.pial.obj
 "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "${SUBJECT_MODEL_PATH}/rh.pial.srf" > "$SUBJECT_MODEL_PATH"/rh.pial.obj
 "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "${SUBJECT_MODEL_PATH}/whole.pial.srf" > "$SUBJECT_MODEL_PATH"/whole.pial.obj
+for file in $( ls ${SUBJECT_MODEL_PATH}/lh.white_roi.* )
+    do 
+	newFileName="$(basename "$file" .srf).obj"
+    "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "$file" > "${SUBJECT_MODEL_PATH}/$newFileName"
+done
+for file in $( ls ${SUBJECT_MODEL_PATH}/rh.white_roi.* )
+    do 
+	newFileName="$(basename "$file" .srf).obj"
+    "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "$file" > "${SUBJECT_MODEL_PATH}/$newFileName"
+done
+for file in $( ls ${SUBJECT_MODEL_PATH}/lh.pial_roi.* )
+    do 
+	newFileName="$(basename "$file" .srf).obj"
+    "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "$file" > "${SUBJECT_MODEL_PATH}/$newFileName"
+done
+for file in $( ls ${SUBJECT_MODEL_PATH}/rh.pial_roi.* )
+    do 
+	newFileName="$(basename "$file" .srf).obj"
+    "$SCRIPT_DIR_PATH/areal/bin/srf2obj" "$file" > "${SUBJECT_MODEL_PATH}/$newFileName"
+done
+
+
+# Cleanup
+mkdir "$SUBJECT_MODEL_PATH/srf"
+for file in $( ls "$SUBJECT_MODEL_PATH"/*.srf )
+do
+    mv $file "$SUBJECT_MODEL_PATH/srf/$(basename $file)"
+done
+
+
 
 echo "-> conversion complete:"
-echo "   > model/lh.pial.obj"
-echo "   > model/rh.pial.obj"
-echo "   > model/whole.pial.obj"
+echo "   > model/lh.pial.obj		- entire right hemisphere surface"
+echo "   > model/lh.pial_roi.***.obj	- series of segmented brain regions, lh"
+echo "   > model/rh.pial.obj		- entire right hemisphere surface"
+echo "   > model/rh.pial_roi.***.obj	- series of segmented brain regions, rh"
+echo "   > model/whole.pial.obj		- fused bilateral hemisphers, 1 object"
+echo "   > model/srf/			- files used to gen .obj files"	
 
