@@ -1,6 +1,8 @@
 #!/bin/bash
 # Convert surf files from freesurfer into object files
 
+source BrainSurfacingEnv.sh
+
 FREESURFER_HOME=/Applications/Neuroradiology/freesurfer
 SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 SCRIPT_DIR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -61,9 +63,9 @@ fi
 
 # convert pial surface
 echo "-> converting surf to .srf"
-$FREESURFER_HOME/bin/mris_convert "$1"/surf/lh.pial "$SUBJECT_MODEL_PATH"/lh.pial.asc
+$_DIR_FREESURFER/bin/mris_convert "$1"/surf/lh.pial "$SUBJECT_MODEL_PATH"/lh.pial.asc
 mv "$SUBJECT_MODEL_PATH"/lh.pial.asc "$SUBJECT_MODEL_PATH"/lh.pial.srf
-$FREESURFER_HOME/bin/mris_convert "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc
+$_DIR_FREESURFER/bin/mris_convert "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc
 mv "$SUBJECT_MODEL_PATH"/rh.pial.asc "$SUBJECT_MODEL_PATH"/rh.pial.srf
 
 # Deep Structures
@@ -75,10 +77,10 @@ mv "$SUBJECT_MODEL_PATH"/rh.pial.asc "$SUBJECT_MODEL_PATH"/rh.pial.srf
 "$SCRIPT_DIR_PATH/areal/bin/annot2dpv" "$1/label/lh.aparc.annot" "${SUBJECT_MODEL_PATH}/lh.aparc.annot.dpv"
 "$SCRIPT_DIR_PATH/areal/bin/annot2dpv" "$1/label/rh.aparc.annot" "${SUBJECT_MODEL_PATH}/rh.aparc.annot.dpv"
 # must convert lh.white from binary to ascii
-"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/lh.white "$SUBJECT_MODEL_PATH"/lh.white.asc  
-"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/rh.white "$SUBJECT_MODEL_PATH"/rh.white.asc  
-"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/lh.pial "$SUBJECT_MODEL_PATH"/lh.pial.asc  
-"$FREESURFER_HOME/bin/mris_convert" "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc  
+"$_DIR_FREESURFER/bin/mris_convert" "$1"/surf/lh.white "$SUBJECT_MODEL_PATH"/lh.white.asc  
+"$_DIR_FREESURFER/bin/mris_convert" "$1"/surf/rh.white "$SUBJECT_MODEL_PATH"/rh.white.asc  
+"$_DIR_FREESURFER/bin/mris_convert" "$1"/surf/lh.pial "$SUBJECT_MODEL_PATH"/lh.pial.asc  
+"$_DIR_FREESURFER/bin/mris_convert" "$1"/surf/rh.pial "$SUBJECT_MODEL_PATH"/rh.pial.asc  
 # Before running, be sure that ${FREESURFER_HOME}/matlab is in the Octave/matlab, path. With the data-per-vertex file ready, do the splitting of the surface with splitsrf.
 # This will create several files names as lh.white_roi*. Each corresponds to one piece of the cortex, in *.srf format. To convert to a format that can be read directly into computer graphics software.
 "$SCRIPT_DIR_PATH/areal/bin/splitsrf" "$SUBJECT_MODEL_PATH/lh.white.asc" "${SUBJECT_MODEL_PATH}/lh.aparc.annot.dpv" "${SUBJECT_MODEL_PATH}/lh.white_roi"

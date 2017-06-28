@@ -1,0 +1,1 @@
+#!/bin/bashsource BrainSurfacingEnv.sh# location of MRIcron's dcm2nii#MRICRON=/Applications/Neuroradiology/MRIcron/CONVERTER="$_DIR_MRICRON"/dcm2nii64flags="-a y -p y -g y -v y"inputFldr="$1"echo "> converting and anonymizing $inputFldr..."# converting files in place"$CONVERTER" "$flags" "$inputFldr"
